@@ -1,13 +1,14 @@
 # LinkedIn Job Search Enricher
 
-A simple browser tool for building LinkedIn job search links from role titles, locations, and work arrangement keywords.
+Combine multiple job roles and locations into one LinkedIn Jobs search. Add as many as you like—the tool places no limit on the number of roles or locations you can select.
 
 ## Usage
 
 Open `index.html` in your browser - no installation or build step required.
 
-- Select or add role titles and locations, then choose optional work arrangement keywords.
-- Click **Find jobs on LinkedIn** to open your search, or copy the generated URL.
+- Add job roles and locations, then select the ones you want to include in your search.
+- Optionally include on-site, hybrid, or remote as search keywords.
+- Click **Find jobs on LinkedIn** to open LinkedIn Jobs with your selected roles and locations in a new tab, or copy the combined search link.
 - Roles and locations are saved in browser storage and can be exported or imported as JSON.
 
 To add a location, copy its `geoId` from a LinkedIn Jobs search URL. Work arrangements are included as keywords.

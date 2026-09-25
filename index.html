@@ -4,13 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Linkedin job search enricher</title>
+  <title>Linkedin Jobs Search</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: #f5f7fa; color: #172b3a; font: 15px/1.6 system-ui, sans-serif; }
     main { width: min(100% - 32px, 700px); margin: 56px auto; }
     header { margin-bottom: 28px; }
     h1 { margin: 8px 0; font-size: clamp(28px, 6vw, 38px); line-height: 1.2; letter-spacing: -.04em; }
+    h2 { margin: 0 0 8px; font-size: 18px; line-height: 1.4; font-weight: 600; }
     p { margin: 0; color: #617080; }
     .card { background: white; border: 1px solid #e0e6ec; border-radius: 18px; padding: 28px; box-shadow: 0 8px 32px #172b3a05; }
     fieldset { padding: 0; border: 0; margin: 0 0 28px; min-width: 0; }
@@ -22,14 +23,16 @@
     .choice span { display: flex; align-items: center; min-height: 44px; padding: 8px 13px; border: 1px solid #dae1e8; border-radius: 10px; font-size: 13px; transition: background .15s; overflow-wrap: anywhere; }
     .choice input:checked + span { border-color: #0a66c2; background: #edf5ff; }
     .choice input:focus-visible + span, :focus-visible { outline: 3px solid #80b9f0; outline-offset: 3px; }
-    .add-row { display: flex; gap: 6px; margin-top: 10px; }
+    .add-row { display: flex; align-items: flex-end; gap: 6px; margin-top: 10px; }
+    .add-row label { flex: 1; min-width: 0; font-size: 13px; }
+    .add-row label input { display: block; margin-top: 4px; }
     input[type=text] { min-width: 0; width: 100%; height: 32px; border: 1px solid #dae1e8; border-radius: 7px; padding: 4px 9px; font: inherit; font-size: 13px; }
     button, .primary { min-height: 44px; border-radius: 9px; font: inherit; font-weight: 600; cursor: pointer; }
     button { border: 1px solid #dae1e8; background: #fff; color: #34495c; padding: 9px 16px; }
     button:hover { background: #f5f7fa; }
     .add-row button, .config-actions button { min-height: 32px; height: 32px; padding: 4px 12px; border-radius: 7px; font-size: 13px; }
     .config-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
-    .config-actions button { display: inline-flex; align-items: center; justify-content: center; width: 32px; padding: 0; }
+    .config-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
     #config-status { font-size: 13px; margin-top: 6px; }
     #roles, #locations, #arrangements { gap: 6px; align-items: flex-start; }
     #arrangements .choice span { min-height: 0; height: 24px; padding: 0 8px; border-radius: 7px; font-size: 12px; line-height: 22px; white-space: nowrap; }
@@ -49,69 +52,78 @@
     #url { display: block; width: 100%; height: 116px; margin: 12px 0; padding: 12px; resize: vertical; border: 1px solid #dae1e8; border-radius: 9px; color: #34495c; background: #f8fafc; font: 12px/1.6 monospace; }
     #status { font-size: 13px; margin-top: 10px; }
     footer { text-align: center; margin-top: 20px; font-size: 12px; color: #718090; }
-    @media (max-width: 480px) { main { margin: 28px auto; } .card { padding: 20px; } .location-row { flex-wrap: wrap; } .location-row input { flex: 1 1 100%; } .location-row button { width: 100%; } }
+    @media (max-width: 480px) { main { margin: 28px auto; } .card { padding: 20px; } .location-row { flex-wrap: wrap; } .location-row label { flex: 1 1 100%; } .location-row button { width: 100%; } }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <h1>Linkedin job search enricher</h1>
-      <p>Choose what fits. Open your search on LinkedIn.</p>
+      <h1>Linkedin Jobs Search</h1>
+      <h2>Multiple roles. Multiple locations. One search.</h2>
+      <p>LinkedIn limits how many job roles and locations you can select. This tool lets you add as many as you like and combine them into one search. Select the roles and locations you want, then click Find jobs on LinkedIn to open your search in a new tab.</p>
       <div class="config-actions">
-        <button id="export-config" type="button" aria-label="Export config" title="Export config">
+        <button id="export-config" type="button" title="Download your job titles and locations as a JSON file">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/>
           </svg>
+          Save preferences
         </button>
-        <button id="import-config" type="button" aria-label="Import config" title="Import config">
+        <button id="import-config" type="button" title="Load job titles and locations from a saved JSON file">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M12 15V3m-5 5 5-5 5 5M4 16v4h16v-4"/>
           </svg>
+          Load preferences
         </button>
-        <input id="config-file" type="file" accept=".json,application/json" hidden>
+        <input id="config-file" type="file" aria-label="Saved preferences file" accept=".json,application/json" hidden>
       </div>
       <p id="config-status" role="status"></p>
     </header>
     <div class="card">
       <fieldset>
-        <legend>Role titles</legend>
-        <p class="hint">Select one or more, or add your own.</p>
+        <legend>Which job roles interest you?</legend>
+        <p class="hint">Choose one or more roles to include in the same search. Add as many as you need, or use × to remove a role from your list.</p>
         <div id="roles" class="choices"></div>
         <form id="add-role" class="add-row">
-          <input id="role-name" type="text" aria-label="Custom role title" placeholder="Add a role title" maxlength="120" required>
-          <button type="submit">Add</button>
+          <label for="role-name">Add another job role
+            <input id="role-name" type="text" placeholder="e.g. Product Manager" maxlength="120" required>
+          </label>
+          <button type="submit">Add role</button>
         </form>
       </fieldset>
       <fieldset>
-        <legend>Locations</legend>
-        <p class="hint" id="location-hint">Locations from your original URL, shown by LinkedIn ID. Leave all unselected for any location.</p>
+        <legend>Which locations should your search include?</legend>
+        <p class="hint" id="location-hint">Add and select as many locations as you like, all in the same search. Leave all unselected to search without a location filter.</p>
         <div id="locations" class="choices"></div>
         <form id="add-location" class="add-row location-row">
-          <input id="location-name" type="text" aria-label="Location name" placeholder="City or country" maxlength="100" required>
-          <input id="location-id" type="text" aria-label="LinkedIn location ID" placeholder="LinkedIn geoId" inputmode="numeric" pattern="[0-9]+" maxlength="20" required>
-          <button type="submit">Add</button>
+          <label for="location-name">City, region, or country
+            <input id="location-name" type="text" placeholder="e.g. Berlin" maxlength="100" required>
+          </label>
+          <label for="location-id">LinkedIn location ID
+            <input id="location-id" type="text" placeholder="e.g. 103035651" aria-describedby="location-id-help" inputmode="numeric" pattern="[0-9]+" maxlength="20" required>
+          </label>
+          <button type="submit">Add location</button>
         </form>
         <details>
-          <summary>How to find a location ID</summary>
-          <p class="hint">Search for a location on LinkedIn Jobs, then copy the number after <code>geoId=</code> in its URL.</p>
+          <summary>How do I add a new location?</summary>
+          <p class="hint" id="location-id-help">Choose a location in a LinkedIn Jobs search. In your browser’s address bar, find <code>geoId=</code> and copy the number immediately after it. Paste that number into the location ID field and enter a name for the location.</p>
         </details>
       </fieldset>
       <fieldset>
-        <legend>Work arrangement</legend>
-        <p class="hint">Optional. Included as keywords, matching your original link.</p>
+        <legend>Work preferences (optional)</legend>
+        <p class="hint">Include on-site, hybrid, or remote as keywords alongside your roles. Leave all unselected if you have no preference.</p>
         <div id="arrangements" class="choices"></div>
       </fieldset>
       <div class="result">
         <p id="summary" aria-live="polite"></p>
         <a id="search" class="primary" target="_blank" rel="noopener noreferrer" aria-disabled="true">Find jobs on LinkedIn <span aria-hidden="true">↗</span></a>
         <details>
-          <summary>View generated URL</summary>
-          <textarea id="url" aria-label="Generated LinkedIn URL" readonly></textarea>
-          <button id="copy" type="button">Copy link</button>
+          <summary>View or copy this combined search link</summary>
+          <textarea id="url" aria-label="Your LinkedIn job search link" readonly></textarea>
+          <button id="copy" type="button">Copy search link</button>
         </details>
         <p id="status" role="status"></p>
       </div>
-      <noscript>Please enable JavaScript to build your search URL.</noscript>
+      <noscript>Enable JavaScript in your browser to choose your preferences and build a job search link.</noscript>
     </div>
     <footer>Not affiliated with LinkedIn. Built by <a href="https://shajanjacob.com/">Shajan</a></footer>
   </main>
@@ -236,7 +248,7 @@
         localStorage.setItem('linkedin-jobs.choices', JSON.stringify(getConfig()));
         return true;
       } catch {
-        status.textContent = 'Changed for this session. Browser storage is unavailable, so it could not be saved.';
+        status.textContent = 'Your changes work for now, but this browser couldn’t save them. Use Save preferences to keep a copy.';
         return false;
       }
     }
@@ -251,7 +263,7 @@
         searchLink.setAttribute('aria-disabled', 'true');
         urlPreview.value = '';
         document.getElementById('copy').disabled = true;
-        document.getElementById('summary').textContent = 'Select at least one role to build your search.';
+        document.getElementById('summary').textContent = 'Select at least one job role to search on LinkedIn.';
         return;
       }
       const url = new URL('https://www.linkedin.com/jobs/search-results/');
@@ -262,7 +274,7 @@
       searchLink.setAttribute('aria-disabled', 'false');
       urlPreview.value = url.href;
       document.getElementById('copy').disabled = false;
-      document.getElementById('summary').textContent = `${roles.length} role${roles.length === 1 ? '' : 's'} · ${geoIds.length ? geoIds.length + ' location' + (geoIds.length === 1 ? '' : 's') : 'Any location'}`;
+      document.getElementById('summary').textContent = `Your combined search: ${roles.length} job role${roles.length === 1 ? '' : 's'} · ${geoIds.length ? geoIds.length + ' location' + (geoIds.length === 1 ? '' : 's') : 'Any location'}`;
     }
 
     restoreChoices();
@@ -290,7 +302,7 @@
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-      configStatus.textContent = 'Config export started.';
+      configStatus.textContent = 'Downloading your job titles and locations. Keep this file to load them later.';
     });
 
     document.getElementById('import-config').addEventListener('click', () => configFile.click());
@@ -307,12 +319,12 @@
         }
         updateUrl();
         configStatus.textContent = saveChoices()
-          ? 'Config imported and saved.'
-          : 'Config imported for this session. Browser storage is unavailable.';
+          ? 'Your saved job titles and locations are loaded and saved in this browser.'
+          : 'Your preferences are loaded for now, but this browser couldn’t save them for next time.';
       } catch (error) {
         configStatus.textContent = error instanceof SyntaxError
-          ? 'Import failed: the file is not valid JSON.'
-          : `Import failed: ${error.message}`;
+          ? 'Couldn’t load this file. Choose a JSON file downloaded using Save preferences.'
+          : `Couldn’t load your preferences. ${error.message}`;
       } finally {
         configFile.value = '';
       }
@@ -346,11 +358,11 @@
       if (!urlPreview.value) return;
       try {
         await navigator.clipboard.writeText(urlPreview.value);
-        status.textContent = 'Link copied.';
+        status.textContent = 'Search link copied. You can paste it anywhere.';
       } catch {
         urlPreview.focus();
         urlPreview.select();
-        status.textContent = 'Select and copy the highlighted URL.';
+        status.textContent = 'Automatic copying isn’t available. Copy the highlighted search link manually.';
       }
     });
 
