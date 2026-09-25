@@ -1,6 +1,8 @@
-# LinkedIn Job Search Enricher
+# Linkedin Jobs Search
 
-Combine multiple job roles and locations into one LinkedIn Jobs search. Add as many as you like—the tool places no limit on the number of roles or locations you can select.
+### Multiple roles. Multiple locations. One search.
+
+LinkedIn limits how many job roles and locations you can select. This tool lets you add as many as you like and combine them into one search. Select the roles and locations you want, then click **Find jobs on LinkedIn** to open your search in a new tab.
 
 ## Usage
 
